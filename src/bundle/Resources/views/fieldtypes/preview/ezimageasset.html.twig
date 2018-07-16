@@ -1,0 +1,52 @@
+{% trans_default_domain 'fieldtypes_preview' %}
+
+{% set field = ez_field(content, 'image') %}
+{% set versionInfo = content.versionInfo  %}
+{% set imageAlias = ez_image_alias( field, versionInfo, parameters.alias|default( 'original' ) ) %}
+{% set src = imageAlias ? asset( imageAlias.uri ) : "//:0" %}
+
+<div class="ez-imageasset__wrapper" style="flex-basis: 50%; margin-right: 2rem">
+    <img src="{{ src }}" style="max-width: 100%; display: inline-block">
+</div>
+<table class="ez-field-preview__image-meta">
+    <thead>
+        <tr>
+            <th>{{ 'ezimage.image_file_properties'|trans|desc('Image file properties') }}:</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ 'ezimage.file_name'|trans|desc('File name') }}:</td>
+            <td>{{ field.value.fileName }}</td>
+        </tr>
+        <tr>
+            <td>{{ 'ezimage.size'|trans|desc('Size') }}:</td>
+            <td>{{ field.value.fileSize|ez_file_size( 1 ) }}</td>
+        </tr>
+        <tr>
+            <td>{{ 'ezimage.alternative_text'|trans|desc('Alternative text') }}:</td>
+            <td>{{ field.value.alternativeText }}</td>
+        </tr>
+        <tr>
+            <td>{{ 'ezimage.master_dimensions'|trans|desc('Master dimensions') }}:</td>
+            <td>
+                {{ 'ezimage.width_and_height'|trans({
+                    '%width%': field.value.width,
+                    '%height%': field.value.height})|desc('%width%px Width - %height%px Height')
+                }}
+            </td>
+        </tr>
+        <tr>
+            <td>{{ 'ezimage.ratio'|trans|desc('Ratio') }}:</td>
+            <td>{{ (field.value.width/field.value.height)|round(2) }}</td>
+        </tr>
+
+    </tbody>
+</table>
+<div class="ez-field-preview__actions-wrapper">
+    <a class="ez-field-preview__action ez-field-preview__action--preview" href="{{ field.value.uri }}" target="_blank">
+        <svg class="ez-icon ez-icon--medium ez-icon--light">
+            <use xlink:href="/bundles/ezplatformadminui/img/ez-icons.svg#open-newtab"></use>
+        </svg>
+    </a>
+</div>

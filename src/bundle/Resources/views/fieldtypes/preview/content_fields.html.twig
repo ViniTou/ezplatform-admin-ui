@@ -394,6 +394,21 @@
 {% endspaceless %}
 {% endblock %}
 
+{% block ezimageasset_field %}
+{% spaceless %}
+{% if not ez_is_field_empty( content, field ) %}
+    {% set attr = attr|merge({'class': (attr.class|default('') ~ ' ez-field-preview ez-field-preview--ezimageasset')|trim}) %}
+    <div {{ block( 'field_attributes' ) }}>
+        {{ render(controller('ez_content:viewAction', {
+            'contentId': field.value.destinationContentId,
+            'viewType': 'preview_ezimageasset',
+            'layout': false
+        })) }}
+    </div>
+{% endif %}
+{% endspaceless %}
+{% endblock %}
+
 {% block ezobjectrelation_field %}
 {% spaceless %}
 {% if not ez_is_field_empty( content, field ) %}

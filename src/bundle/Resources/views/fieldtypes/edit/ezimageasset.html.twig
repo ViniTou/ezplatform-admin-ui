@@ -1,0 +1,118 @@
+{% trans_default_domain 'ezrepoforms_content' %}
+
+{% use '@ezdesign/fieldtypes/edit/binary_base.html.twig' %}
+
+{%- block ezplatform_fieldtype_ezimageasset_row -%}
+    {% set preview_block_name = 'ezimageasset_preview' %}
+    {% set max_file_size = min(form.parent.vars.value.fieldDefinition.validatorConfiguration.FileSizeValidator.maxFileSize * 1024 * 1024, max_upload_size|round) %}
+    {% set attr = attr|merge({'accept': 'image/*'}) %}
+
+    {% set file_is_empty = not form.parent.vars.value.value.destinationContentId %}
+    {% set attr = attr|merge({'data-max-file-size': max_file_size}) %}
+    {% set wrapper_attr = wrapper_attr|default({})|merge({'class': (wrapper_attr.class|default('') ~ ' ez-field-edit--with-preview')|trim}) %}
+    {% set preview_attr = preview_attr|default({})|merge({'class': (preview_attr.class|default('') ~ ' ez-field-edit__preview')|trim}) %}
+    {% set widget_wrapper_attr = widget_wrapper_attr|default({})|merge({'class': (widget_wrapper_attr.class|default('') ~ ' ez-field-edit__data')|trim}) %}
+
+    {% set has_error = false %}
+    {% for error in form.parent.parent.parent.vars.errors %}
+        {% if error.origin == form.vars.errors.form %}
+            {% set has_error = true %}
+        {% endif %}
+    {% endfor %}
+
+    {% if file_is_empty or has_error %}
+        {% set preview_attr = preview_attr|default({})|merge({'hidden': 'hidden'}) %}
+    {% else %}
+        {% set widget_wrapper_attr = widget_wrapper_attr|merge({'hidden': 'hidden'}) %}
+    {% endif %}
+
+    {% set widget_container_block = block('ezplatform_fieldtype_ezimageasset_widget_container') %}
+
+    {{ block('form_row_fieldtype') }}
+{%- endblock -%}
+
+
+{% block ezplatform_fieldtype_ezimageasset_widget_container %}
+    <div{% with { attr: preview_attr } %}{{ block('attributes') }}{% endwith %}>
+        {{ block(preview_block_name) }}
+    </div>
+    <div{% with { attr: widget_wrapper_attr } %}{{ block('attributes') }}{% endwith %}>
+        <div class="ez-data-source">
+            {{ block('ezplatform_fieldtype_ezimageasset_widget') }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block  ezplatform_fieldtype_ezimageasset_widget %}
+    <div class="ez-data-source__message--main">
+        {{ 'fieldtype.binary_base.drag_drop'|trans|desc('Drag and drop your files on browser window or upload them') }}
+    </div>
+    <div class="ez-data-source__btn-add">
+        <svg class="ez-icon">
+            <use xlink:href="/bundles/ezplatformadminui/img/ez-icons.svg#upload"></use>
+        </svg>
+        <span class="ez-data-source__btn-label">
+            {{ 'Upload image'|trans|desc('Upload image') }}
+        </span>
+    </div>
+    <div class="ez-data-source__btn-select" data-udw-config="{{ ez_udw_config('image_asset', {}) }}">
+        <svg class="ez-icon">
+            <use xlink:href="/bundles/ezplatformadminui/img/ez-icons.svg#browse"></use>
+        </svg>
+        <span class="ez-data-source__btn-label">
+            {{ 'Select image'|trans|desc('Select image') }}
+        </span>
+    </div>
+
+    {% if max_file_size is defined and max_file_size > 0 %}
+        <div class="ez-data-source__message--filesize">
+            {{ 'fieldtype.binary_base.max_file_size'|trans({'%size%': max_file_size|default(0)|ez_file_size(2)})|desc('Max file size: %size%') }}
+        </div>
+    {% endif %}
+    {{- form_widget(form.file, {'attr': attr}) -}}
+    {{- form_widget(form.remove, {'attr': {
+        'hidden': 'hidden',
+        'class': 'ez-field-edit__option--remove-media'
+    }, 'label_attr': {'hidden': 'hidden', 'class': 'checkbox-inline'}}) -}}
+    {{- form_widget(form.destinationContentId, {'attr': {
+        'class': 'ez-field-edit__destination_content_id'
+    }}) -}}
+{% endblock %}
+
+{% block ezimageasset_preview %}
+    {% form_theme form '@ezdesign/fieldtypes/edit/binary_base_fields.html.twig' %}
+
+    <div class="ez-field-edit-preview">
+        <div class="ez-field-edit-preview__visual">
+            <div class="ez-field-edit-preview__media-wrapper">
+                <img
+                    class="ez-field-edit-preview__media"
+                    src="{{ image ? image.uri : '://0' }}"
+                    alt="{{ 'content.field_type.ezimageasset.img_alt'|trans({'%label%': form.vars.label})|desc("Image stored in field '%label%'") }}" />
+            </div>
+            <div class="ez-field-edit-preview__details">
+                <span class="ez-field-edit-preview__file-name">
+                    {{ image ? image.fileName : '' }}
+                </span>
+                <span class="ez-field-edit-preview__file-size">
+                    {{ image ? image.fileSize|ez_file_size(2) : '' }}
+                </span>
+            </div>
+            <div class="ez-field-edit-preview__image-alt">
+
+            </div>
+        </div>
+        <div class="ez-field-edit-preview__actions">
+            <button type="button" class="ez-field-edit-preview__action--remove">
+                <svg class="ez-icon">
+                    <use xlink:href="/bundles/ezplatformadminui/img/ez-icons.svg#trash"></use>
+                </svg>
+            </button>
+            <a class="ez-field-edit-preview__action--preview" href="{{ image ? image.uri : '://0' }}" target="_blank">
+                <svg class="ez-icon">
+                    <use xlink:href="/bundles/ezplatformadminui/img/ez-icons.svg#open-newtab"></use>
+                </svg>
+            </a>
+        </div>
+    </div>
+{% endblock %}
