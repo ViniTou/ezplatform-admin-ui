@@ -228,4 +228,21 @@
     <div class="ezimageasset-validator max-file-size{% if group_class is not empty %} {{ group_class }}{% endif %}">
         {{- form_row(form.maxSize) -}}
     </div>
+    <div class="ezimageasset-settings selection-default-location{% if group_class is not empty %} {{ group_class }}{% endif %}">
+        {{- form_row(form.selectionDefaultLocation) -}}
+        <div class="mt-1">
+            <button data-universaldiscovery-title="{{"field_definition.ezimageasset.selection_root_udw_title"|trans({}, "ezrepoforms_content_type")}}"
+                    class="ez-button-tree pure-button ez-font-icon ez-button btn btn-secondary btn--udw-imageasset-default-location"
+                    data-relation-root-input-selector="#{{form.selectionDefaultLocation.vars.id}}"
+                    data-relation-selected-root-name-selector="#{{form.selectionDefaultLocation.vars.id}}-selected-root-name"
+                    data-starting-location-id="{{ admin_ui_config.universalDiscoveryWidget.startingLocationId|default(1) }}"
+                    data-udw-config="{{ ez_udw_config('single_container', {}) }}"
+            >{{"field_definition.ezimageasset.selection_root_udw_button"|trans({}, "ezrepoforms_content_type")}}</button>
+        </div>
+        <div id="{{form.selectionDefaultLocation.vars.id}}-selected-root-name">
+            {% if form.selectionDefaultLocation.vars.value is not empty %}
+                {{ render( controller( "ez_content:viewLocation", {'locationId': form.selectionDefaultLocation.vars.value, 'viewType': '_platformui_content_name'} ) ) }}
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
