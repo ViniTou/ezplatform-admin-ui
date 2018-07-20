@@ -21,7 +21,7 @@
             });
         }
 
-        createImageDraftPayload(file, data) {
+        createImageDraftPayload(file, data, targetPath) {
             return {
                 ContentCreate: {
                     ContentType: {
@@ -30,7 +30,7 @@
                     mainLanguageCode: 'eng-GB',
                     LocationCreate: {
                         ParentLocation: {
-                            _href: '/api/ezp/v2/content/locations/1/43/51'
+                            _href: '/api/ezp/v2/content/locations' + targetPath || '/1/43/51'
                         },
                         sortField: 'PATH',
                         sortOrder: 'ASC'
@@ -58,7 +58,7 @@
             };
         }
 
-        createImage(file) {
+        createImage(file, targetPath) {
             this.getImageData(file)
                 .then((data) => {
                     const request = new Request('/api/ezp/v2/content/objects', {
@@ -69,7 +69,7 @@
                             'X-Siteaccess': siteaccess,
                             'X-CSRF-Token': token
                         },
-                        body: JSON.stringify(this.createImageDraftPayload(file, data)),
+                        body: JSON.stringify(this.createImageDraftPayload(file, data, targetPath)),
                         mode: 'same-origin',
                         credentials: 'same-origin'
                     });
@@ -203,6 +203,7 @@
          */
         handleInputChange(event) {
             const file = event.currentTarget.files[0];
+            const targetPath = this.fieldContainer.querySelector('.ez-data-source__btn-add').dataset.defaultLocationPath;
 
             if (this.maxFileSize > 0 && file.size > this.maxFileSize) {
                 return this.resetInputField();
@@ -210,7 +211,7 @@
 
             this.fieldContainer.querySelector('.ez-field-edit__option--remove-media').checked = false;
 
-            this.createImage(file);
+            this.createImage(file, targetPath);
 
         }
 

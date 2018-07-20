@@ -5,6 +5,7 @@
 {%- block ezplatform_fieldtype_ezimageasset_row -%}
     {% set preview_block_name = 'ezimageasset_preview' %}
     {% set max_file_size = min(form.parent.vars.value.fieldDefinition.validatorConfiguration.FileSizeValidator.maxFileSize * 1024 * 1024, max_upload_size|round) %}
+    {% set default_location_id = form.parent.vars.value.fieldDefinition.fieldSettings.selectionDefaultLocation ?? 1 %}
     {% set attr = attr|merge({'accept': 'image/*'}) %}
 
     {% set file_is_empty = not form.parent.vars.value.value.destinationContentId %}
@@ -43,11 +44,11 @@
     </div>
 {% endblock %}
 
-{% block  ezplatform_fieldtype_ezimageasset_widget %}
+{% block ezplatform_fieldtype_ezimageasset_widget %}
     <div class="ez-data-source__message--main">
         {{ 'fieldtype.binary_base.drag_drop'|trans|desc('Drag and drop your files on browser window or upload them') }}
     </div>
-    <div class="ez-data-source__btn-add">
+    <div class="ez-data-source__btn-add" data-default-location-path="{{ default_location_path }}">
         <svg class="ez-icon">
             <use xlink:href="/bundles/ezplatformadminui/img/ez-icons.svg#upload"></use>
         </svg>
@@ -55,7 +56,7 @@
             {{ 'Upload image'|trans|desc('Upload image') }}
         </span>
     </div>
-    <div class="ez-data-source__btn-select" data-udw-config="{{ ez_udw_config('image_asset', {}) }}">
+    <div class="ez-data-source__btn-select" data-udw-config="{{ ez_udw_config('image_asset', {'default_location_id': default_location_id}) }}">
         <svg class="ez-icon">
             <use xlink:href="/bundles/ezplatformadminui/img/ez-icons.svg#browse"></use>
         </svg>
