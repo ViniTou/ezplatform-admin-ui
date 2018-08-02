@@ -12,6 +12,7 @@ use eZ\Publish\API\Repository\Exceptions\InvalidArgumentException;
 use eZ\Publish\API\Repository\Exceptions\NotFoundException;
 use eZ\Publish\API\Repository\URLAliasService;
 use eZ\Publish\API\Repository\Values\Content\URLAlias;
+use eZ\Publish\Core\MVC\Symfony\Routing\SimplifiedRequest;
 use eZ\Publish\Core\MVC\Symfony\SiteAccess;
 use EzSystems\EzPlatformAdminUi\Specification\SiteAccess\IsAdmin;
 use EzSystems\RepositoryForms\Event\FormActionEvent;
@@ -35,22 +36,28 @@ class UrlRedirectProcessor implements EventSubscriberInterface
     /** @var array */
     private $siteaccessGroups;
 
+    /** @var \eZ\Publish\Core\MVC\Symfony\SiteAccess\Router */
+    private $siteaccessRouter;
+
     /**
      * @param \Symfony\Component\Routing\RouterInterface $router
      * @param \eZ\Publish\API\Repository\URLAliasService $urlAliasService
      * @param \eZ\Publish\Core\MVC\Symfony\SiteAccess $siteaccess
      * @param array $siteaccessGroups
+     * @param \eZ\Publish\Core\MVC\Symfony\SiteAccess\Router $siteaccessRouter
      */
     public function __construct(
         RouterInterface $router,
         URLAliasService $urlAliasService,
         SiteAccess $siteaccess,
-        array $siteaccessGroups
+        array $siteaccessGroups,
+        SiteAccess\Router $siteaccessRouter
     ) {
         $this->router = $router;
         $this->urlAliasService = $urlAliasService;
         $this->siteaccess = $siteaccess;
         $this->siteaccessGroups = $siteaccessGroups;
+        $this->siteaccessRouter = $siteaccessRouter;
     }
 
     /**
@@ -117,11 +124,16 @@ class UrlRedirectProcessor implements EventSubscriberInterface
             return;
         }
 
+        $simplifiedRequest = SimplifiedRequest::fromUrl($response->getTargetUrl());
+        $siteaccess = $this->siteaccessRouter->match($simplifiedRequest);
+
+        $url = $simplifiedRequest->pathinfo;
+        if ($siteaccess->matcher instanceof SiteAccess\URILexer) {
+            $url = $siteaccess->matcher->analyseURI(parse_url($response->getTargetUrl(), PHP_URL_PATH));
+        }
         /* If target URL was set to something else than Location, do nothing */
         try {
-            $targetUrlAlias = $this->urlAliasService->lookup(
-                $response->getTargetUrl()
-            );
+            $targetUrlAlias = $this->urlAliasService->lookup($url);
         } catch (InvalidArgumentException $e) {
             return;
         } catch (NotFoundException $e) {
