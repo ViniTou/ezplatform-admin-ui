@@ -493,15 +493,21 @@ ezplatform.version_draft.has_no_conflict:
         _controller: 'EzSystems\EzPlatformAdminUiBundle\Controller\Content\VersionDraftConflictController::draftHasNoConflictAction'
 
 ezplatform.version.side_by_side_comparison:
-    path: /version/side-by-side-comparison/{contentInfoId}/{versionNoA}/{versionNoB}
+    path: /version/side-by-side-comparison/{contentInfoId}/{versionNoA}/{languageCodeA}/{versionNoB}/{languageCodeB}
+    options:
+        expose: true
     defaults:
-        _controller: 'EzSystems\EzPlatformAdminUiBundle\Controller\Version\VersionCompareController::sideBySideCompareAction'
+        _controller: 'EzSystems\EzPlatformAdminUiBundle\Controller\Version\VersionComparisonController::sideBySideCompareAction'
+        languageCodeA: null
         versionNoB: null
+        languageCodeB: null
 
 ezplatform.version.compare:
     path: /version/comparison/{contentInfoId}/{versionNoA}/{versionNoB}/{languageCode}
+    options:
+        expose: true
     defaults:
-        _controller: 'EzSystems\EzPlatformAdminUiBundle\Controller\Version\VersionCompareController::compareAction'
+        _controller: 'EzSystems\EzPlatformAdminUiBundle\Controller\Version\VersionComparisonController::compareAction'
         languageCode: null
 # LocationView / Locations tab
 

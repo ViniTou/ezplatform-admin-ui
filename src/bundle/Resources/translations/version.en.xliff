@@ -11,6 +11,31 @@
         <target state="new">Versions removed from '%name%' content.</target>
         <note>key: version.delete.success</note>
       </trans-unit>
+      <trans-unit id="785ea96b442ac54b8a25423b3edd36dcc574a8a4" resname="version_info.status.draft">
+        <source>Draft</source>
+        <target state="new">Draft</target>
+        <note>key: version_info.status.draft</note>
+      </trans-unit>
+      <trans-unit id="8d33e24a1a15c90ea3eac14dd7888a14eec26f87" resname="version_info.status.published">
+        <source>Published</source>
+        <target state="new">Published</target>
+        <note>key: version_info.status.published</note>
+      </trans-unit>
+      <trans-unit id="2606e3196d40ee3cdfbdb7c62334d8c4e0dfb87a" resname="version_info.status.archived">
+        <source>Archived</source>
+        <target state="new">Archived</target>
+        <note>key: version_info.status.archived</note>
+      </trans-unit>
+      <trans-unit id="664d2e29c7d676aa99c558d7d2bb663168b70e8e" resname="version_info.comparison.select_name">
+        <source>%status% - Version %version% - %language%</source>
+        <target state="new">%status% - Version %version% - %language%</target>
+        <note>key: version_info.comparison.select_name</note>
+      </trans-unit>
+      <trans-unit id="a7f78628f4533483d54c7648511cc2720d9eda45" resname="version_info.comparison.select_placeholder">
+        <source>Select a version to compare</source>
+        <target state="new">Select a version to compare</target>
+        <note>key: version_info.comparison.select_placeholder</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

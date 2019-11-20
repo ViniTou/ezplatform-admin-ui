@@ -159,5 +159,8 @@ module.exports = (Encore) => {
         ])
         .addEntry('ezplatform-admin-ui-settings-datetime-format-update-js', [
             path.resolve(__dirname, '../public/js/scripts/admin.settings.datetimeformat.update.js'),
+        ])
+        .addEntry('ezplatform-admin-ui-version-comparison-js', [
+            path.resolve(__dirname, '../public/js/scripts/admin.version.comparison.js'),
         ]);
 };

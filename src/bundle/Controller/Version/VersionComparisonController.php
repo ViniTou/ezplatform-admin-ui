@@ -12,11 +12,16 @@ use eZ\Publish\API\Repository\ContentComparisonService;
 use eZ\Publish\API\Repository\ContentService;
 use eZ\Publish\API\Repository\ContentTypeService;
 use eZ\Publish\API\Repository\Values\Content\ContentInfo;
+use eZ\Publish\API\Repository\Values\Content\VersionInfo;
+use EzSystems\EzPlatformAdminUi\Form\Data\Version\VersionChoiceData;
+use EzSystems\EzPlatformAdminUi\Form\Data\VersionComparisonData;
+use EzSystems\EzPlatformAdminUi\Form\Type\Content\VersionComparisonType;
 use EzSystems\EzPlatformAdminUi\Util\FieldDefinitionGroupsUtil;
 use EzSystems\EzPlatformAdminUiBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\Form\FormInterface;
 
-final class VersionCompareController extends Controller
+final class VersionComparisonController extends Controller
 {
     /** @var \eZ\Publish\API\Repository\ContentComparisonService */
     private $compareService;
@@ -30,34 +35,43 @@ final class VersionCompareController extends Controller
     /** @var \EzSystems\EzPlatformAdminUi\Util\FieldDefinitionGroupsUtil */
     private $fieldDefinitionGroupsUtil;
 
+    /** @var \Symfony\Component\Form\FormFactoryInterface */
+    private $formFactory;
+
     public function __construct(
         ContentComparisonService $contentComparisonService,
         ContentService $contentService,
         ContentTypeService $contentTypeService,
-        FieldDefinitionGroupsUtil $fieldDefinitionGroupsUtil
+        FieldDefinitionGroupsUtil $fieldDefinitionGroupsUtil,
+        FormFactoryInterface $formFactory
     ) {
         $this->compareService = $contentComparisonService;
         $this->contentService = $contentService;
         $this->contentTypeService = $contentTypeService;
         $this->fieldDefinitionGroupsUtil = $fieldDefinitionGroupsUtil;
+        $this->formFactory = $formFactory;
     }
 
     public function sideBySideCompareAction(
-        Request $request,
         ContentInfo $contentInfo,
         int $versionNoA,
+        string $languageCodeA = null,
         int $versionNoB = null,
-        string $languageCode = null
+        string $languageCodeB = null
     ) {
-
-        $contentA = $this->contentService->loadContent($contentInfo->id, $languageCode ?? [$languageCode], $versionNoA);
+        $contentA = $this->contentService->loadContent($contentInfo->id, $languageCodeA ? [$languageCodeA] : null, $versionNoA);
         $contentType = $this->contentTypeService->loadContentType($contentA->contentInfo->contentTypeId);
         $contentAfieldDefinitionsByGroup = $this->fieldDefinitionGroupsUtil->groupFieldDefinitions($contentType->getFieldDefinitions());
+        $versionInfoA = $this->contentService->loadVersionInfo($contentInfo, $versionNoA);
 
         $contentB = null;
+        $versionInfoB = null;
         if ($versionNoB) {
-            $contentB = $this->contentService->loadContent($contentInfo->id, $languageCode ?? [$languageCode], $versionNoB);
+            $contentB = $this->contentService->loadContent($contentInfo->id, $languageCodeB ? [$languageCodeB] : null, $versionNoB);
+            $versionInfoB = $this->contentService->loadVersionInfo($contentInfo, $versionNoB);
         }
+
+        $selectVersionsForm = $this->getForm($contentInfo, $languageCodeA, $languageCodeB, $versionInfoA, $versionInfoB);
 
         return $this->render(
             '@admin/content/comparison/side_by_side.html.twig',
@@ -65,18 +79,17 @@ final class VersionCompareController extends Controller
                     'content_a' => $contentA,
                     'content_b' => $contentB,
                     'field_definitions_by_group' => $contentAfieldDefinitionsByGroup,
+                    'select_versions_form' => $selectVersionsForm->createView(),
                 ]
         );
     }
 
     public function compareAction(
-        Request $request,
         ContentInfo $contentInfo,
         int $versionNoA,
         int $versionNoB,
         string $languageCode = null
     ) {
-
         $versionInfoA = $this->contentService->loadVersionInfo($contentInfo, $versionNoA);
         $versionInfoB = $this->contentService->loadVersionInfo($contentInfo, $versionNoB);
 
@@ -86,13 +99,42 @@ final class VersionCompareController extends Controller
             $languageCode
         );
 
-        $contentA = $this->contentService->loadContentByVersionInfo($versionInfoA, $languageCode ?? [$languageCode]);
+        $contentA = $this->contentService->loadContentByVersionInfo($versionInfoA, $languageCode ? [$languageCode] : null);
+        $contentAfieldDefinitionsByGroup = $this->fieldDefinitionGroupsUtil->groupFieldDefinitionsDiff($versionDiff);
+        $selectVersionsForm = $this->getForm($contentInfo, $languageCode, $languageCode, $versionInfoA, $versionInfoB);
 
         return $this->render(
             '@admin/content/comparison/single.html.twig',
             [
                 'version_diff' => $versionDiff,
                 'content_a' => $contentA,
+                'field_definitions_by_group' => $contentAfieldDefinitionsByGroup,
+                'select_versions_form' => $selectVersionsForm->createView(),
+            ]
+        );
+    }
+
+    protected function getForm(
+        ContentInfo $contentInfo,
+        string $languageCodeA,
+        string $languageCodeB,
+        VersionInfo $versionInfoA,
+        ?VersionInfo $versionInfoB
+    ): FormInterface {
+        return $this->formFactory->create(
+            VersionComparisonType::class,
+            new VersionComparisonData(
+                new VersionChoiceData(
+                    $versionInfoA,
+                    $languageCodeA ?? $versionInfoA->initialLanguageCode,
+                ),
+                new VersionChoiceData(
+                    $versionInfoB,
+                    $languageCodeB ? $languageCodeB : ($versionInfoB ? $versionInfoB->initialLanguageCode : null),
+                )
+            ),
+            [
+                'content_info' => $contentInfo,
             ]
         );
     }
